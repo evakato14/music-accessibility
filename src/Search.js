@@ -3,27 +3,19 @@ import * as SpotifyWebApi from "spotify-web-api-js";
 import PersonalTaste from "./components/PersonalTaste";
 import { ClickedTitleText } from "./components/TitleText";
 import { SearchTitleText } from "./components/TitleText";
+import ReactModal from "react-modal";
+import { customStyles } from "./components/modalStyles";
 
 var spotifyApi = new SpotifyWebApi();
-const audioFeatures = [
-  "valence",
-  "danceability",
-  "energy",
-  "instrumentalness",
-  "speechiness",
-  "acousticness",
-  "loudness",
-  "tempo"
-];
 
 class Search extends Component {
   constructor(props) {
     super(props);
     this.state = {
       user: "",
+      showModal: false,
       artists: "",
       chosenArtist: "",
-      chosenArtistAlbums: [],
       chosenArtistOverallSound: {
         valence: 0,
         danceability: 0,
@@ -34,8 +26,6 @@ class Search extends Component {
         loudness: 0,
         tempo: 0
       },
-      artistAllTracks: [],
-      artistTracksRanked: {},
       topTracks: [],
       overallSound: {
         valence: 0,
@@ -47,12 +37,17 @@ class Search extends Component {
         loudness: 0,
         tempo: 0
       },
-      randomTrack1: "",
-      randomTrack2: ""
+      artistAlbumTypes: {},
+      recommendedTracks: [],
+      range: "medium_term",
+      weight: 0.5
     };
     this.onSearchChange = this.onSearchChange.bind(this);
     this.clickArtistProfile = this.clickArtistProfile.bind(this);
-    this.audioFeaturesApi = this.audioFeaturesApi.bind(this);
+    this.handleOpenModal = this.handleOpenModal.bind(this);
+    this.handleCloseModal = this.handleCloseModal.bind(this);
+    this.onRangeChange = this.onRangeChange.bind(this);
+    this.onWeightChange = this.onWeightChange.bind(this);
   }
 
   componentDidMount() {
@@ -66,30 +61,54 @@ class Search extends Component {
     );
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.chosenArtistAlbums !== this.state.chosenArtistAlbums) {
-      this.setState({
-        artistAllTracks: []
-      });
-      this.getAudioFeatures(this.state.chosenArtistAlbums);
-    }
-    if (prevState.artistAllTracks !== this.state.artistAllTracks) {
-      let trackIds = this.state.artistAllTracks.map(({ id }) => id);
-      this.audioFeaturesApi(
-        trackIds,
-        Math.trunc(trackIds.length / 100) * 100,
-        true
-      );
-    }
+  onRangeChange(e) {
+    this.setState({
+      range: e.target.value
+    });
   }
 
-  randomTwoSongs() {
-    let a = Math.floor(Math.random() * 50);
-    let b = a;
-    while (a === b) {
-      b = Math.floor(Math.random() * 50);
-    }
-    return [a, b];
+  onWeightChange(e) {
+    this.setState({
+      weight: e.target.value
+    });
+  }
+
+  handleOpenModal() {
+    this.setState({ showModal: true });
+  }
+
+  handleCloseModal() {
+    this.setState({ showModal: false });
+  }
+
+  reset() {
+    this.setState({
+      artists: "",
+      chosenArtist: "",
+      chosenArtistOverallSound: {
+        valence: 0,
+        danceability: 0,
+        energy: 0,
+        instrumentalness: 0,
+        speechiness: 0,
+        acousticness: 0,
+        loudness: 0,
+        tempo: 0
+      },
+      topTracks: [],
+      overallSound: {
+        valence: 0,
+        danceability: 0,
+        energy: 0,
+        instrumentalness: 0,
+        speechiness: 0,
+        acousticness: 0,
+        loudness: 0,
+        tempo: 0
+      },
+      artistAlbumTypes: {},
+      recommendedTracks: []
+    });
   }
 
   onSearchChange(e) {
@@ -119,160 +138,54 @@ class Search extends Component {
     }
   }
 
-  audioFeaturesApi = (trackIds, loopNum, firstCall) => {
-    if (firstCall) {
-      this.setState({
-        chosenArtistOverallSound: {}
-      });
-    }
-    spotifyApi.getAudioFeaturesForTracks(
-      trackIds.slice(loopNum),
-      function(err, data) {
-        if (err) {
-          console.log(err);
-        } else {
-          audioFeatures.forEach(audioFeature => {
-            let audioFeatureTotal = 0;
-            data["audio_features"].forEach(track => {
-              if (track) {
-                audioFeatureTotal += track[audioFeature];
-              }
-            });
-            this.setState(prevState => ({
-              chosenArtistOverallSound: {
-                ...prevState.chosenArtistOverallSound,
-                [audioFeature]: audioFeatureTotal
-              }
-            }));
-          });
-        }
-      }.bind(this)
-    );
-    if (loopNum > 0) {
-      this.audioFeaturesApi(trackIds, loopNum - 100, false);
-    }
-  };
-
-  getAudioFeatures(allAlbums) {
-    allAlbums.forEach(album => {
-      spotifyApi.getAlbumTracks(
-        album.id,
-        { limit: 50 },
-        function(err, tracksOfAlbum) {
-          if (tracksOfAlbum) {
-            let newTracksOfAlbum = tracksOfAlbum.items.map(function(el) {
-              let track = Object.assign({}, el);
-              track.albumUri = album.uri;
-              track.image = album.images[0].url;
-              return track;
-            });
-            this.setState({
-              artistAllTracks: [
-                ...this.state.artistAllTracks,
-                ...newTracksOfAlbum
-              ]
-            });
-          }
-        }.bind(this)
-      );
-    });
-  }
-
-  getArtistAlbums(artistId, offset) {
-    let allAlbums = this.state.chosenArtistAlbums.slice();
-    spotifyApi.getArtistAlbums(
-      artistId,
-      {
-        include_groups: "album,single",
-        limit: 50,
-        country: "US",
-        offset: offset
-      },
-      function(err, data) {
-        allAlbums.push(data.items[0]);
-        for (var i = 1; i < data.items.length; i++) {
-          if (data.items[i].name !== data.items[i - 1].name) {
-            allAlbums.push(data.items[i]);
-          }
-        }
-        this.setState({
-          chosenArtistAlbums: allAlbums
-        });
-        if (data.items.length === 50) {
-          this.getArtistAlbums(artistId, offset + 50);
-        }
-      }.bind(this)
-    );
-  }
-
   clickArtistProfile = artist => {
-    const twoSongs = this.randomTwoSongs();
     this.setState({
       chosenArtist: artist
     });
-    fetch("/audio_features?artist=" + artist.uri).then(response =>
+    fetch(
+      "/audio_features?artist=" +
+        artist.uri +
+        "&token=" +
+        this.props.token +
+        "&range=" +
+        this.state.range +
+        "&weight=" +
+        this.state.weight
+    ).then(response =>
       response.json().then(data => {
         console.log(data);
-      })
-    );
-
-    spotifyApi.getMyTopTracks(
-      { limit: 50, time_range: "medium_term" },
-      function(err, data) {
-        data.items.forEach(track =>
-          spotifyApi.getAudioFeaturesForTrack(
-            track.id,
-            function(err, data) {
-              if (err) {
-                console.log(err);
-              } else {
-                audioFeatures.forEach(audioFeature =>
-                  this.setState(prevState => ({
-                    overallSound: {
-                      ...prevState.overallSound,
-                      [audioFeature]:
-                        this.state.overallSound[audioFeature] +
-                        data[audioFeature]
-                    }
-                  }))
-                );
-              }
-            }.bind(this)
-          )
-        );
         this.setState({
-          topTracks: data.items,
-          randomTrack1: data.items[twoSongs[0]],
-          randomTrack2: data.items[twoSongs[1]]
+          chosenArtistOverallSound: data["artist_audio_features"],
+          overallSound: data["user_audio_features"],
+          randomUserTracks: data["user_two_songs"],
+          artistAlbumTypes: data["artist_album_types"],
+          recommendedTracks: data["recommended_tracks"]
         });
-      }.bind(this)
+      })
     );
   };
 
   render() {
     return (
-      <div className="container mt-4">
+      <div className="container mt-4 mb-4">
         {this.state.chosenArtist.name ? (
           <div>
             <ClickedTitleText
               artist={this.state.chosenArtist}
             ></ClickedTitleText>
-            {this.state.randomTrack1 && this.state.randomTrack2 ? (
-              <PersonalTaste
-                user={this.state.user}
-                track1={this.state.randomTrack1}
-                track2={this.state.randomTrack2}
-                overallSound={this.state.overallSound}
-                artist={this.state.chosenArtist}
-                artistAlbums={this.state.chosenArtistAlbums}
-                artistOverallSound={this.state.chosenArtistOverallSound}
-                artistNoOfTracks={this.state.artistAllTracks.length}
-                recommendedTracks={this.state.artistAllTracks.slice(0, 10)}
-                token={this.props.token}
-              ></PersonalTaste>
-            ) : (
-              ""
-            )}
+            <PersonalTaste
+              user={this.state.user}
+              overallSound={this.state.overallSound}
+              artist={this.state.chosenArtist}
+              artistOverallSound={this.state.chosenArtistOverallSound}
+              twoTracks={this.state.randomUserTracks}
+              albumTypes={this.state.artistAlbumTypes}
+              token={this.props.token}
+              recommendedTracks={this.state.recommendedTracks}
+            ></PersonalTaste>
+            <button className="btn btn-warning" onClick={() => this.reset()}>
+              Search another artist!
+            </button>
           </div>
         ) : (
           <div>
@@ -281,11 +194,160 @@ class Search extends Component {
               <div className="col-sm-3"></div>
               <div className="col-sm-6">
                 <input
-                  type="email"
+                  type="text"
                   className="form-control form-control-lg"
                   placeholder="Search Artist"
                   onChange={this.onSearchChange}
                 ></input>
+              </div>
+              <div className="col-sm-3 text-left">
+                <button
+                  className="btn btn-light"
+                  onClick={() => this.handleOpenModal()}
+                >
+                  <i class="fa fa-cog fa-2x"></i>
+                </button>
+                <ReactModal isOpen={this.state.showModal} style={customStyles}>
+                  <h6 className="text-center">
+                    We use your listening history to calculate your preferred
+                    sound.
+                  </h6>
+                  <h6 className="text-center">
+                    Feel free to change the time period from which we collect
+                    your listening habits:
+                  </h6>
+                  <div
+                    className="btn-group d-block text-center mb-4"
+                    role="group"
+                  >
+                    <button
+                      type="button"
+                      value="short_term"
+                      className={
+                        "btn " +
+                        (this.state.range == "short_term"
+                          ? "btn-dark"
+                          : "btn-outline-dark")
+                      }
+                      onClick={this.onRangeChange}
+                    >
+                      Past 30 Days
+                    </button>
+                    <button
+                      type="button"
+                      value="medium_term"
+                      className={
+                        "btn " +
+                        (this.state.range == "medium_term"
+                          ? "btn-dark"
+                          : "btn-outline-dark")
+                      }
+                      onClick={this.onRangeChange}
+                    >
+                      Past 6 Months
+                    </button>
+                    <button
+                      type="button"
+                      value="long_term"
+                      className={
+                        "btn " +
+                        (this.state.range == "long_term"
+                          ? "btn-dark"
+                          : "btn-outline-dark")
+                      }
+                      onClick={this.onRangeChange}
+                    >
+                      Past Year
+                    </button>
+                  </div>
+                  <h6 className="text-center">
+                    We think it's important to factor how representative of the
+                    artist's sound is in our recommendation algorithm.
+                  </h6>
+                  <h6 className="text-center">
+                    Feel free to change the weighting of this representativeness
+                    factor.
+                  </h6>
+                  <div className="d-block text-center">
+                    <span className="mr-4 small">Not very representative</span>
+                    <div className="btn-group" role="group">
+                      <button
+                        type="button"
+                        value={0.1}
+                        className={
+                          "btn " +
+                          (this.state.weight == 0.1
+                            ? "btn-dark"
+                            : "btn-outline-dark")
+                        }
+                        onClick={this.onWeightChange}
+                      >
+                        10%
+                      </button>
+                      <button
+                        type="button"
+                        value={0.3}
+                        className={
+                          "btn " +
+                          (this.state.weight == 0.3
+                            ? "btn-dark"
+                            : "btn-outline-dark")
+                        }
+                        onClick={this.onWeightChange}
+                      >
+                        30%
+                      </button>
+                      <button
+                        type="button"
+                        value={0.5}
+                        className={
+                          "btn " +
+                          (this.state.weight == 0.5
+                            ? "btn-dark"
+                            : "btn-outline-dark")
+                        }
+                        onClick={this.onWeightChange}
+                      >
+                        50%
+                      </button>
+                      <button
+                        type="button"
+                        value={0.7}
+                        className={
+                          "btn " +
+                          (this.state.weight == 0.7
+                            ? "btn-dark"
+                            : "btn-outline-dark")
+                        }
+                        onClick={this.onWeightChange}
+                      >
+                        70%
+                      </button>
+                      <button
+                        type="button"
+                        value={0.9}
+                        className={
+                          "btn " +
+                          (this.state.weight == 0.9
+                            ? "btn-dark"
+                            : "btn-outline-dark")
+                        }
+                        onClick={this.onWeightChange}
+                      >
+                        90%
+                      </button>
+                    </div>
+                    <span className="ml-4 small">Very representative</span>
+                  </div>
+                  <div className="text-center mt-4">
+                    <button
+                      className="btn btn-primary "
+                      onClick={this.handleCloseModal}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </ReactModal>
               </div>
             </div>
             {this.state.artists ? (

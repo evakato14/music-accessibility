@@ -1,21 +1,6 @@
 import React from "react";
 import Recommended from "./Recommended";
 
-function albumTypes(albums, type) {
-  let numAlbums;
-  for (var i = 0; i < albums.length; i++) {
-    if (albums[i].album_type == "album") {
-      numAlbums = i + 1;
-    }
-  }
-  if (type == "album") return numAlbums;
-  return albums.length - numAlbums;
-}
-
-function noOfRecommendedAlbums(noOfAlbums) {
-  return Math.trunc(noOfAlbums / 2);
-}
-
 function PersonalTaste(props) {
   return (
     <div className="container mb-5 mt-4">
@@ -30,11 +15,11 @@ function PersonalTaste(props) {
           </div>
           {props.artist.name} has released{" "}
           <span className="text-primary">
-            {albumTypes(props.artistAlbums, "album")} album(s)
+            {props.albumTypes.album} album(s)
           </span>{" "}
           and{" "}
           <span className="text-primary">
-            {albumTypes(props.artistAlbums, "single")} single(s)
+            {props.albumTypes.single} single(s)
           </span>{" "}
           on Spotify. We calculated the audio features of {props.artist.name}
           {props.artist.name.slice(-1).toLowerCase() == "s" ? "'" : "'s"}{" "}
@@ -52,11 +37,8 @@ function PersonalTaste(props) {
               <tr>
                 <td className="text-info">{audioFeature}</td>
                 <td>
-                  {props.overallSound[audioFeature] && props.artistNoOfTracks
-                    ? (
-                        props.artistOverallSound[audioFeature] /
-                        props.artistNoOfTracks
-                      ).toFixed(3)
+                  {props.overallSound[audioFeature]
+                    ? props.artistOverallSound[audioFeature].toFixed(3)
                     : "Loading..."}
                 </td>
               </tr>
@@ -78,7 +60,7 @@ function PersonalTaste(props) {
                 <td className="text-info">{audioFeature}</td>
                 <td>
                   {props.overallSound[audioFeature]
-                    ? (props.overallSound[audioFeature] / 50).toFixed(3)
+                    ? props.overallSound[audioFeature].toFixed(3)
                     : "Loading..."}
                 </td>
               </tr>
@@ -94,11 +76,22 @@ function PersonalTaste(props) {
           </div>
           We calculated the audio features of your overall music taste, based on
           your favorite songs like{" "}
-          <span className="text-primary">{props.track1.name}</span> by{" "}
-          <span className="text-secondary">{props.track1.artists[0].name}</span>{" "}
-          and <span className="text-primary">{props.track2.name}</span> by{" "}
-          <span className="text-secondary">{props.track2.artists[0].name}</span>
-          .
+          {props.twoTracks ? (
+            <div>
+              <span className="text-primary">{props.twoTracks[0].name}</span> by{" "}
+              <span className="text-secondary">
+                {props.twoTracks[0].artists[0].name}
+              </span>{" "}
+              and{" "}
+              <span className="text-primary">{props.twoTracks[1].name}</span> by{" "}
+              <span className="text-secondary">
+                {props.twoTracks[1].artists[0].name}
+              </span>
+              .
+            </div>
+          ) : (
+            <div></div>
+          )}
         </h3>
       </div>
       <Recommended
@@ -106,9 +99,7 @@ function PersonalTaste(props) {
         recommendedTracks={props.recommendedTracks}
         token={props.token}
         artistAlbums={props.artistAlbums}
-        noOfRecommendedAlbums={noOfRecommendedAlbums(
-          albumTypes(props.artistAlbums, "album")
-        )}
+        noOfRecommendedAlbums={1}
       ></Recommended>
     </div>
   );

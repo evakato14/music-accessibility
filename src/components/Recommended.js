@@ -5,6 +5,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faStar as farFaStar } from "@fortawesome/free-regular-svg-icons";
 import Rate from "./Rate";
 import ReactModal from "react-modal";
+import { customStyles } from "./modalStyles";
 
 var spotifyApi = new SpotifyWebApi();
 library.add(farFaStar);
@@ -53,7 +54,7 @@ class PersonalTaste extends Component {
               : "'s"}{" "}
             music.
           </h3>
-          <table class="table col-6">
+          <table className="table col-6">
             <tbody>
               {this.props.recommendedTracks ? (
                 this.props.recommendedTracks.map((track, i) => (
@@ -66,17 +67,25 @@ class PersonalTaste extends Component {
                       <h6 className="mt-2">{i + 1}</h6>
                     </th>
                     <td style={{ width: "10%" }} className="align-self-center">
-                      <img src={track.image} style={{ width: "125%" }}></img>
+                      <img
+                        src={track.album_art}
+                        style={{ width: "125%" }}
+                      ></img>
                     </td>
                     <td style={{ width: "75%" }} className="text-left">
                       <h6 className="mt-2">
-                        <strong>{track.name}</strong>
+                        <strong>{track.title}</strong>
                       </h6>
                     </td>
                     <td style={{ width: "5%" }} className="text-right">
                       <a
                         className="btn btn-sm"
-                        onClick={() => this.play(track.albumUri, track.uri)}
+                        onClick={() =>
+                          this.play(
+                            "spotify:album:" + track.album_id,
+                            "spotify:track:" + track.track_id
+                          )
+                        }
                       >
                         <i className="fa fa-play-circle fa-2x"></i>
                       </a>
@@ -84,7 +93,7 @@ class PersonalTaste extends Component {
                     <td style={{ width: "5%" }} className="text-right">
                       <a
                         className="btn btn-sm"
-                        onClick={() => this.handleOpenModal(track.name)}
+                        onClick={() => this.handleOpenModal(track.title)}
                       >
                         <FontAwesomeIcon
                           icon={farFaStar}
@@ -99,11 +108,7 @@ class PersonalTaste extends Component {
                 <div></div>
               )}
             </tbody>
-            <ReactModal
-              isOpen={this.state.showModal}
-              contentLabel="Minimal Modal Example"
-              style={customStyles}
-            >
+            <ReactModal isOpen={this.state.showModal} style={customStyles}>
               <div className="text-center">
                 <h3>
                   Rate{" "}
@@ -161,16 +166,5 @@ class PersonalTaste extends Component {
     );
   }
 }
-
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)"
-  }
-};
 
 export default PersonalTaste;
