@@ -2,7 +2,7 @@ export const authEndpoint = "https://accounts.spotify.com/authorize";
 
 // Replace with your app's client ID, redirect URI and desired scopes
 export const clientId = "29c9533a402248d8981f6885e388cf02";
-export const redirectUri = "https://music-accessibility.herokuapp.com/";
+export const redirectUri = "https://evakato14.github.io/music-accessibility";
 export const scopes = [
   "user-top-read",
   "user-read-currently-playing",

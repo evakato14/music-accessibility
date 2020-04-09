@@ -200,10 +200,7 @@ class App extends Component {
               <a href="https://github.com/evakato14/music-accessibility">
                 Web Interface Code
               </a>
-              <a
-                className="d-block"
-                href="https://github.com/evakato14/music-accessibility-api"
-              >
+              <a className="d-block" href="https://github.com/evakato14/ma-api">
                 Python API Code
               </a>
             </div>
