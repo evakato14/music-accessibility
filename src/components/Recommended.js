@@ -26,6 +26,7 @@ class PersonalTaste extends Component {
   }
 
   play(albumUri, trackUri) {
+    console.log(albumUri, trackUri);
     spotifyApi.play(
       { context_uri: albumUri, offset: { uri: trackUri } },
       function(err, data) {
@@ -152,15 +153,7 @@ class PersonalTaste extends Component {
           </h3>
         </div>
         <div className="row justify-content-center">
-          {this.props.artistAlbums ? (
-            Array.from(
-              this.props.artistAlbums.slice(0, this.props.noOfRecommendedAlbums)
-            ).map(album => (
-              <img src={album.images[0].url} className="col-2 mb-2"></img>
-            ))
-          ) : (
-            <div></div>
-          )}
+          <h3 className="text-danger display-4">Coming soon!</h3>
         </div>
       </div>
     );

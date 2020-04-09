@@ -17,14 +17,14 @@ class Search extends Component {
       artists: "",
       chosenArtist: "",
       chosenArtistOverallSound: {
-        valence: 0,
+        acousticness: 0,
         danceability: 0,
         energy: 0,
         instrumentalness: 0,
-        speechiness: 0,
-        acousticness: 0,
         loudness: 0,
-        tempo: 0
+        speechiness: 0,
+        tempo: 0,
+        valence: 0
       },
       topTracks: [],
       overallSound: {
@@ -86,14 +86,14 @@ class Search extends Component {
       artists: "",
       chosenArtist: "",
       chosenArtistOverallSound: {
-        valence: 0,
+        acousticness: 0,
         danceability: 0,
         energy: 0,
         instrumentalness: 0,
-        speechiness: 0,
-        acousticness: 0,
         loudness: 0,
-        tempo: 0
+        speechiness: 0,
+        tempo: 0,
+        valence: 0
       },
       topTracks: [],
       overallSound: {
