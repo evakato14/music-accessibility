@@ -143,7 +143,7 @@ class Search extends Component {
       chosenArtist: artist
     });
     fetch(
-      "http://evakato14.pythonanywhere.com/audio_features?artist=" +
+      "https://evakato14.pythonanywhere.com/audio_features?artist=" +
         artist.uri +
         "&token=" +
         this.props.token +
