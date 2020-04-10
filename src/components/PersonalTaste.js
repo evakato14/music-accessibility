@@ -120,6 +120,7 @@ function PersonalTaste(props) {
             "Loading..."
           )}
         </h3>
+        <hr></hr>
         <table className="table table-borderless col-7">
           <thead>
             <tr>

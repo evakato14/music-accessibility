@@ -193,7 +193,7 @@ class App extends Component {
                 with, such as live albums, demos, compilations, commentary, etc.
                 as well as less important and "nonessential" albums to an
                 artist. (Bjork stans - No, Vulnicura isn't included. Don't come
-                at me.)
+                at me).
               </h6>
             </div>
             <div className="mb-5">
