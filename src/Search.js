@@ -153,7 +153,6 @@ class Search extends Component {
         this.state.weight
     ).then(response =>
       response.json().then(data => {
-        console.log(data);
         this.setState({
           chosenArtistOverallSound: data["artist_audio_features"],
           overallSound: data["user_audio_features"],
