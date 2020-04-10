@@ -164,7 +164,7 @@ function PersonalTaste(props) {
         </table>
         <h3 className="col-6 align-self-center">
           <div>
-            {props.user.images ? (
+            {props.user.images.length ? (
               <img
                 src={props.user.images[0].url}
                 className="img-responsive rounded-circle mb-3 w-25"
