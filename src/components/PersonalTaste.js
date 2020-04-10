@@ -164,10 +164,14 @@ function PersonalTaste(props) {
         </table>
         <h3 className="col-6 align-self-center">
           <div>
-            <img
-              src={props.user.images[0].url}
-              className="img-responsive rounded-circle mb-3 w-25"
-            ></img>
+            {props.user.images ? (
+              <img
+                src={props.user.images[0].url}
+                className="img-responsive rounded-circle mb-3 w-25"
+              ></img>
+            ) : (
+              ""
+            )}
           </div>
           We calculated the audio features of your overall music taste, based on
           your favorite songs like{" "}
